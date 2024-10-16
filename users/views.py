@@ -4,6 +4,9 @@ from django.contrib.auth.decorators import login_required
 from .forms import CustomUserCreationForm, CustomAuthenticationForm, CustomUserChangeForm
 from django.contrib.auth import authenticate
 from reviews.views import get_review_data
+from django.contrib.auth.decorators import login_required
+from .forms import ProfileUpdateForm
+from django.contrib.auth import update_session_auth_hash
 
 # 로그인 뷰
 def login_view(request):
@@ -74,3 +77,22 @@ def profile_display_view(request):
         'review_data': review_data,
     }
     return render(request, 'users/profile_display.html', context)
+
+
+@login_required
+def profile_edit(request):
+    user = request.user
+    if request.method == 'POST':
+        form = ProfileUpdateForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            # 비밀번호가 입력된 경우
+            if form.cleaned_data['password']:
+                user.set_password(form.cleaned_data['password'])  # 비밀번호 해싱
+            # 나머지 필드 저장
+            form.save()
+            update_session_auth_hash(request, user)  # 세션 업데이트
+            return redirect('profile_display')  # 수정 완료 후 리다이렉트할 페이지
+    else:
+        form = ProfileUpdateForm(instance=user)
+    
+    return render(request, 'users/profile_display_change.html', {'form': form})

@@ -1,6 +1,8 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, UserChangeForm
 from .models import CustomUser
+from django.contrib.auth.models import User
+from django.contrib.auth.forms import PasswordChangeForm
 
 class CustomUserCreationForm(UserCreationForm):
     phone_number = forms.CharField(
@@ -74,3 +76,10 @@ class CustomUserChangeForm(UserChangeForm):
     class Meta(UserChangeForm.Meta):
         model = CustomUser
         fields = ('username', 'email', 'first_name', 'last_name', 'phone_number', 'address', 'date_of_birth', 'profile_picture', 'is_active', 'is_staff', 'is_superuser')
+
+class ProfileUpdateForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput(), required=False)  # 비밀번호 필드 추가
+
+    class Meta:
+        model = CustomUser
+        fields = ['phone_number', 'address', 'date_of_birth', 'profile_picture', 'password']
